@@ -1,0 +1,362 @@
+{
+  "name": "clint Onboarding",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Automation Agency ",
+        "formDescription": "KIndly fill these below information to get started with   AI automation",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Full Name",
+              "placeholder": "Haji Talha",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Phone Number",
+              "fieldType": "number",
+              "placeholder": "0315698----",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Company name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "What you want ?",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "indestry"
+            },
+            {
+              "fieldLabel": "date",
+              "fieldType": "date",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -480,
+        -112
+      ],
+      "id": "d1d89851-75cb-4524-9baa-1c2a1c27101f",
+      "name": "On form submission",
+      "webhookId": "77065132-0b72-4cd4-92c6-68809612da8e"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "974bcad8-4888-47a7-9624-0e706064f6d2",
+              "name": "Full Name",
+              "value": "={{ $json['Full Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "1c1224f9-91e2-4d61-a4ed-5281cc5ecab1",
+              "name": "Email",
+              "value": "={{ $json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "290c44ca-72d1-4363-b5f4-1a4bbcc75109",
+              "name": "Company name",
+              "value": "={{ $json['Company name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "fa927b6e-4a2f-40db-8981-ccb3f3a96d87",
+              "name": "What you want ?",
+              "value": "={{ $json['What you want ?'] }}",
+              "type": "string"
+            },
+            {
+              "id": "a41ffc4e-4b09-41c7-8d39-bc71104b5937",
+              "name": "date",
+              "value": "={{ $json.date }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -272,
+        -112
+      ],
+      "id": "87aefb9e-4c91-4908-8256-5aa5f9da0deb",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a professional customer support assistant.\n\nYour task is to generate a professional, friendly, and personalized welcome email based on the customer information provided.\n\nCustomer Information:\n- Full Name: {{ $json['Full Name'] }}\n- Email: {{ $json.Email }}\n- Company Name: {{ $json['Company name'] }}\n- Request: {{ $json['What you want ?'] }}\n- Date: {{ $json.date }}\n\nRequirements:\n- Create a professional and engaging email subject.\n- Always greet the customer by their full name if it is available.\n- Never use generic greetings such as \"Dear Customer\", \"Dear User\", or \"Hello Customer\" when the full name is provided.\n- If the full name is missing or empty, then use \"Dear Customer,\".\n- Thank the customer for contacting us.\n- If the company name is available, mention it naturally. If it is empty or missing, do not mention it.\n- Acknowledge the customer's request or inquiry.\n- Inform the customer that we have received their request and that our team will contact them soon.\n- Keep the email professional, friendly, and concise.\n- End the email with:\n  \n  Best regards,\n  Customer Support Team\n\n- Do not include the customer's email address or submission date in the email body.\n- Do not invent information that is not provided.\n\nIMPORTANT:\n- Return ONLY valid JSON.\n- Do not return plain text.\n- Do not use Markdown.\n- Do not wrap the response in code blocks.\n- Do not include labels such as \"Subject:\" or \"Email:\".\n- Return exactly two fields:\n  - \"subject\"\n  - \"body\"\n\nReturn exactly in this format:\n\n{\n  \"subject\": \"Welcome to Our Services\",\n  \"body\": \"Dear Muhammad Talha Ramzan,\\n\\nThank you for contacting us. We have received your request regarding web development services. Our team is reviewing your inquiry and will contact you shortly.\\n\\nIf you have any additional information to share, please feel free to reply to this email.\\n\\nBest regards,\\nCustomer Support Team\"\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -64,
+        -256
+      ],
+      "id": "b73b4f50-c861-4f53-b027-4320c5780fa4",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        -64
+      ],
+      "id": "8a462529-8126-4575-97ff-8d0016419ad9",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "KjTRTDVG5VF1uvQO",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = JSON.parse($json.output);\n\nreturn [\n  {\n    subject: data.subject,\n    body: data.body\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        -256
+      ],
+      "id": "298985d5-f917-43ec-8393-0a93d5a14ebf",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json.Email }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.body }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        496,
+        -256
+      ],
+      "id": "2d2927e4-eb10-4aee-b8ce-37be66b69d55",
+      "name": "Send a message",
+      "webhookId": "224c05b7-98a1-48f2-980b-2d75a5887dc8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "SKnQVVLvwWADh9QK",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a professional customer support assistant.\n\nYour task is to generate a professional Terms and Conditions email for a new customer after they have successfully submitted their inquiry.\n\nCustomer Information:\n- Full Name: {{ $json['Full Name'] }}\n- Email: {{ $json.Email }}\n- Company Name: {{ $json['Company name'] }}\n- Request: {{ $json['What you want ?'] }}\n\nRequirements:\n- Create a professional email subject.\n- Address the customer by their full name. Never use \"Dear Customer\" if the name is available.\n- Thank the customer for their interest.\n- Inform them that this email contains the Terms and Conditions related to our services.\n- Explain that by proceeding with our services, they agree to the company's Terms and Conditions.\n- Mention that they should carefully review the Terms and Conditions before moving forward.\n- State that if they have any questions, they can contact the support team.\n- Keep the email professional, friendly, and concise.\n- End the email with:\n\nBest regards,\nCustomer Support Team\n\nIMPORTANT:\n- Return ONLY valid JSON.\n- Do not return plain text.\n- Do not use Markdown.\n- Do not wrap the response in code blocks.\n- Do not include labels such as \"Subject:\" or \"Email:\".\n- Return exactly two fields:\n  - \"subject\"\n  - \"body\"\n\nReturn exactly in this format:\n\n{\n  \"subject\": \"Terms and Conditions for Our Services\",\n  \"body\": \"Dear Muhammad Talha Ramzan,\\n\\nThank you for your interest in our services. Please take a moment to review our Terms and Conditions before we proceed with your request. By continuing with our services, you acknowledge and agree to these terms.\\n\\nIf you have any questions or need clarification, please feel free to contact our support team.\\n\\nBest regards,\\nCustomer Support Team\"\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        0,
+        96
+      ],
+      "id": "217dfc14-433f-4699-9b91-ade307e96c61",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        304
+      ],
+      "id": "8fd0100d-b7d5-483e-9ac7-4f8f9f9539f4",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "KjTRTDVG5VF1uvQO",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = JSON.parse($json.output);\n\nreturn [\n  {\n    subject: data.subject,\n    body: data.body\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        96
+      ],
+      "id": "fd726ff5-aecf-4861-b9a0-232877492520",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Edit Fields').item.json.Email }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.body }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        96
+      ],
+      "id": "62cb46ca-3908-4754-88a4-ea550656c489",
+      "name": "Send a message1",
+      "webhookId": "acb553f7-c1dc-4c05-b955-f1034f9772ff",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "SKnQVVLvwWADh9QK",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "21df0e15-e686-47c3-9c1c-17f6382e0c6b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d1199d79e50d5e5701eb1e805d7d912e071aebb8aa8b72a9dab7860c67689191"
+  },
+  "nodeGroups": [],
+  "id": "4g8WVtazFQC1MLjl",
+  "tags": []
+}
