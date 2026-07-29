@@ -1,0 +1,184 @@
+{
+  "name": "child",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -784,
+        -240
+      ],
+      "id": "4ea549b7-ea68-4503-a086-bdacf0717e73",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "51a78fc9-6def-4565-895e-2a9df307a8d4",
+              "name": "query",
+              "value": "={{ $json.query }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -528,
+        -240
+      ],
+      "id": "f908eb69-455a-4a63-9a0d-e3b55464c4b4",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "cityName": "={{ $json.query }}"
+      },
+      "type": "n8n-nodes-base.openWeatherMap",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        -240
+      ],
+      "id": "5efff4c1-cbc3-4c5a-a00f-e2f1f8fbe051",
+      "name": "OpenWeatherMap",
+      "credentials": {
+        "openWeatherMapApi": {
+          "id": "ud2oPFKyIlHvQKXa",
+          "name": "OpenWeatherMap account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "models/gemini-3-flash-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a helpful weather assistant.\n\nI will provide you with the OpenWeather API response containing the current weather details for a city.\n\nYour task is to:\n- Analyze the provided weather data.\n- Generate a clear, simple, and natural English description of the current weather.\n- Use plain English that anyone can easily understand.\n- Keep the response concise (2–4 sentences).\n- Mention the city and country.\n- Include the current temperature, feels-like temperature, weather condition, humidity, and wind speed (if available).\n- Provide one helpful weather-related suggestion (e.g., carry an umbrella if it is raining or stay hydrated if it is hot).\n- Do not mention JSON, API, field names, or technical terms.\n- Do not make up any information that is not provided.\n\nWeather Data:\n\nCity: {{ $json.name }}\nCountry: {{ $json.sys.country }}\nWeather: {{ $json.weather[0].main }}\nDescription: {{ $json.weather[0].description }}\nTemperature: {{ $json.main.temp }} °C\nFeels Like: {{ $json.main.feels_like }} °C\nHumidity: {{ $json.main.humidity }}%\nWind Speed:{{ $json.wind.speed }} m/s"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        -48,
+        -224
+      ],
+      "id": "3583b5de-34da-46ca-a48a-723cfaf78e83",
+      "name": "Message a model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "hVzuAsIDHlyyKJIW",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "de877fc1-5be7-4674-a865-ed184a7917f0",
+              "name": "response",
+              "value": "={{ $json.content.parts[0].text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        304,
+        -224
+      ],
+      "id": "d5b34672-2eeb-4bc6-8b65-cac393991931",
+      "name": "Edit Fields1"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "query": "Lahore, Pakistan"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "OpenWeatherMap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenWeatherMap": {
+      "main": [
+        [
+          {
+            "node": "Message a model1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "fa168ef3-c1aa-4a6b-8508-2037a1245f2c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d1199d79e50d5e5701eb1e805d7d912e071aebb8aa8b72a9dab7860c67689191"
+  },
+  "nodeGroups": [],
+  "id": "DlsdaLsORVYQSlU5",
+  "tags": []
+}
