@@ -1,0 +1,64 @@
+# AI Client Onboarding Automation (n8n)
+
+## Overview
+
+This project automates the client onboarding process using n8n, AI, and Gmail.
+
+When a client submits a form:
+
+- Generates a personalized welcome email using AI.
+- Sends the welcome email automatically.
+- Generates a professional Terms & Conditions email.
+- Sends the Terms & Conditions email automatically.
+- Uses AI to personalize email content based on customer information.
+
+## Workflow
+
+Form Submission
+↓
+Edit Fields
+↓
+AI Agent (Welcome Email)
+↓
+JavaScript Code
+↓
+Gmail
+
+AND
+
+Form Submission
+↓
+Edit Fields
+↓
+AI Agent (Terms & Conditions)
+↓
+JavaScript Code
+↓
+Gmail
+
+## Technologies
+
+- n8n
+- Groq AI / LLM
+- Gmail API
+- JavaScript
+- JSON
+
+## Features
+
+- Automated client onboarding
+- Personalized AI-generated welcome emails
+- Automated Terms & Conditions email
+- JSON parsing
+- Dynamic customer data
+- No manual email writing
+
+## Requirements
+
+- n8n
+- Groq API Key
+- Gmail Credentials
+
+## Author
+
+M.Talha Ramzan
