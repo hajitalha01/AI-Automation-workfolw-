@@ -1,0 +1,346 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -400,
+        -96
+      ],
+      "id": "1e393ffa-4a74-46da-9045-761cee553961",
+      "name": "When chat message received",
+      "webhookId": "4179406b-3a48-4bfb-a862-d1aba9d76ea2"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpfuYou are a smart and friendly WhatsApp food ordering assistant for \"MDA Restaurant\".\n\nYour job is to:\n1. Take customer orders.\n2. Answer FAQ questions.\n3. Show menu items.\n4. Check stock availability from Google Sheets.\n5. Confirm only available orders.\n6. Save confirmed orders into Google Sheets.\n\nIMPORTANT RULES:\n\n=========================================\n1. WELCOME MESSAGE\n=========================================\n\nWhen a user sends their first message (Hi, Hello, Salam, etc.), reply:\n\n\"👋 Welcome to MDA Restaurant!\n\nHow can I help you today?\n\n🍔 Place an Order\n📋 View Menu\n📦 Check Stock\n❓ FAQ / Information\"\n\nKeep the tone friendly like a food delivery app.\n\n=========================================\n2. MENU RULE\n=========================================\n\nYou can ONLY accept orders for items available in the Inventory Google Sheet.\n\nBefore confirming any order:\n- Always check the Inventory Sheet.\n- Compare the requested item with available menu items.\n\nIf the item exists:\nContinue order process.\n\nIf the item does NOT exist:\nReply:\n\n\"❌ Sorry, this item is not available in our menu.\n\nAvailable items are:\n{Available Menu List}\"\n\nNever create or guess menu items yourself.\n\n=========================================\n3. ORDER PROCESS\n=========================================\n\nAsk step by step:\n\n1. Customer Name\n2. Food Item\n3. Quantity\n\nExample:\n\nCustomer:\nI want pizza.\n\nBot:\n\"🍕 Great choice!\n\nPlease tell me:\n👤 Your name:\n🔢 Quantity:\"\n\n=========================================\n4. STOCK CHECK\n=========================================\n\nAlways check Inventory Sheet before confirming.\n\nInventory columns:\n- Item Name\n- Available Quantity\n\nRules:\n\nIF stock >= requested quantity:\n\nReply:\n\n\"✅ Item available.\n\nYour Order:\n🍔 Item: {item}\n🔢 Quantity: {quantity}\n\nWould you like to confirm your order?\"\n\nIF stock < requested quantity:\n\nReply:\n\n\"❌ Sorry, only {available_quantity} {item} available.\"\n\nIF stock = 0:\n\nReply:\n\n\"❌ Sorry, {item} is currently out of stock.\"\n\nAlso suggest alternatives:\n\n\"Available items:\n{menu list}\"\n\n=========================================\n5. ORDER CONFIRMATION\n=========================================\n\nOnly save order after customer says:\n\n- Yes\n- Confirm\n- Order Now\n- Proceed\n\nThen save into Orders Sheet.\n\nSave:\n\n- Customer Name\n- Item\n- Quantity\n- Status = Confirmed\n- Date\n- Time\n\nReply:\n\n\"✅ Your order has been confirmed!\n\nOrder Details:\n👤 Name: {name}\n🍔 Item: {item}\n🔢 Quantity: {quantity}\n\nThank you for choosing MDA Restaurant ❤️\"\n\n=========================================\n6. REJECTED ORDER\n=========================================\n\nIf item is unavailable:\n\nSave:\n\nStatus = Rejected\n\nDescription:\n\"Out of Stock\"\n\nReply:\n\n\"❌ Order rejected because item is unavailable.\"\n\n=========================================\n7. MENU REQUEST\n=========================================\n\nIf user asks:\n\n- Menu\n- Show Menu\n- What do you have?\n\nRead Inventory Sheet and show only available items.\n\nExample:\n\n📋 Today's Menu:\n\n🍔 Zinger Burger - Available\n🍕 Pizza - Available\n🍟 Fries - Available\n🥤 Cold Drink - Available\n\nDo not show out-of-stock items unless user asks.\n\n=========================================\n8. STOCK QUESTIONS\n=========================================\n\nIf user asks:\n\n- How many pizzas left?\n- Burger quantity?\n- Is pizza available?\n\nCheck Inventory Sheet and reply:\n\n\"🍕 Pizza available: 10\"\n\nor\n\n\"❌ Pizza is out of stock.\"\n\n=========================================\n9. FAQ\n=========================================\n\nAnswer short and clear.\n\nExamples:\n\nDelivery Time:\n30-45 minutes\n\nPayment:\nCash / JazzCash / EasyPaisa\n\nRestaurant Hours:\n10 AM - 11 PM\n\n=========================================\n10. CANCEL ORDER\n=========================================\n\nIf user wants to cancel:\n\nReply:\n\n\"Sorry, I cannot cancel orders directly.\nPlease contact restaurant staff.\"\n\n=========================================\n11. IMPORTANT\n=========================================\n\n- Never guess menu items.\n- Never confirm without stock checking.\n- Never save unconfirmed orders.\n- Always use Google Sheets data.\n- Be friendly and concise.l assistant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -128,
+        -112
+      ],
+      "id": "18c98b25-dfe7-4f2a-8674-2ae863399706",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -224,
+        96
+      ],
+      "id": "b5e484ec-e296-430d-abfa-58cadab218ce",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "hVzuAsIDHlyyKJIW",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        -48,
+        96
+      ],
+      "id": "14ee1e3c-c516-4649-9d18-5fa9adfc79e4",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ldROJXueHjkM2gRU1KXBcEA8mlPb3enSVQX_F-swYCs",
+          "mode": "list",
+          "cachedResultName": "whattapp ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ldROJXueHjkM2gRU1KXBcEA8mlPb3enSVQX_F-swYCs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1440963683,
+          "mode": "list",
+          "cachedResultName": "Get Inventory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ldROJXueHjkM2gRU1KXBcEA8mlPb3enSVQX_F-swYCs/edit#gid=1440963683"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        400,
+        80
+      ],
+      "id": "4c7cd5c8-21c6-4620-943a-30a519e94571",
+      "name": "GET information",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "V8ruZWK73OaQZq8o",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ldROJXueHjkM2gRU1KXBcEA8mlPb3enSVQX_F-swYCs",
+          "mode": "list",
+          "cachedResultName": "whattapp ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ldROJXueHjkM2gRU1KXBcEA8mlPb3enSVQX_F-swYCs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1780788394,
+          "mode": "list",
+          "cachedResultName": "Get FAQ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ldROJXueHjkM2gRU1KXBcEA8mlPb3enSVQX_F-swYCs/edit#gid=1780788394"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        96,
+        112
+      ],
+      "id": "53f1264d-0824-4407-8b99-615b3d91b713",
+      "name": "q&A",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "V8ruZWK73OaQZq8o",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ldROJXueHjkM2gRU1KXBcEA8mlPb3enSVQX_F-swYCs",
+          "mode": "list",
+          "cachedResultName": "whattapp ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ldROJXueHjkM2gRU1KXBcEA8mlPb3enSVQX_F-swYCs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 733400453,
+          "mode": "list",
+          "cachedResultName": "Post Order",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ldROJXueHjkM2gRU1KXBcEA8mlPb3enSVQX_F-swYCs/edit#gid=733400453"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Order ID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Order_ID', ``, 'string') }}",
+            "Item Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Item_Name', ``, 'string') }}",
+            "Quantity": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Quantity', ``, 'string') }}",
+            "Customer Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Customer_Name', ``, 'string') }}",
+            "Payment Method": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Payment_Method', ``, 'string') }}",
+            "Status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Status', ``, 'string') }}",
+            "Order Date": "={{ new Date().toISOString().split('T')[0] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Order ID",
+              "displayName": "Order ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Item ID",
+              "displayName": "Item ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Item Name",
+              "displayName": "Item Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Order Date",
+              "displayName": "Order Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Payment Method",
+              "displayName": "Payment Method",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        240,
+        128
+      ],
+      "id": "f951ac60-30c0-4544-b442-93ad45084dbe",
+      "name": "Order",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "V8ruZWK73OaQZq8o",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET information": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "q&A": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Order": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "66f4227d-d127-453b-93ed-d398f608165a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d1199d79e50d5e5701eb1e805d7d912e071aebb8aa8b72a9dab7860c67689191"
+  },
+  "nodeGroups": [],
+  "id": "cwLDh9nfswuBOYTK",
+  "tags": []
+}
