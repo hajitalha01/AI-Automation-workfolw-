@@ -1,0 +1,388 @@
+{
+  "name": "Customer Support Chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -688,
+        -64
+      ],
+      "id": "06e09cdf-7143-4cb0-a2f9-a5fcafab64e2",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "b4PZMDyinIf3fCSn",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "AI Agent / Automation Inquiry",
+              "description": "Classify an email into this category if the sender is asking about AI agents, AI automation, AI-powered services, or wants to know what AI agent or automation services Haji Talha provides. Also include emails that mention \"Haji Talha\", \"AI agent\", \"AI automation\", or ask about building, buying, using, or implementing an AI agent or automation."
+            },
+            {
+              "category": "Pricing / Services Inquiry",
+              "description": "Emails asking about service prices, costs, packages, rates, quotes, pricing, or what services are provided, especially for AI agents, AI automation, or related services."
+            },
+            {
+              "category": "Order / Purchase Inquiry",
+              "description": "Emails related to placing an order, purchasing a service, starting an order, order status, or questions about an existing order for AI agents, AI automation, or related services."
+            },
+            {
+              "category": "Other / Not Relevant",
+              "description": "Emails that are not related to AI agents, AI automation, Haji Talha, services, pricing, quotes, purchases, or orders. Includes spam, newsletters, unrelated business inquiries, and general emails."
+            },
+            {
+              "category": "Other",
+              "description": "Any email that is not related to Haji Talha, AI agents, AI automation, AI services, service pricing, quotes, or orders. This includes spam, newsletters, promotions, unrelated inquiries, job offers, personal emails, and other irrelevant messages."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        -288,
+        -112
+      ],
+      "id": "3912702a-2b1d-4dce-ad3b-d6c472536654",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -288,
+        224
+      ],
+      "id": "f882c439-894b-4e14-afd7-711f5701226d",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "RybZtEUIKCAHDfJc",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        32,
+        176
+      ],
+      "id": "929f5cb1-624c-4457-8d45-4022ee2357a5",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Gmail Trigger').item.json.text }}",
+        "options": {
+          "systemMessage": "# Overview\n\nYou are a professional customer support agent for KamranAIInsights Solutions.\n\nYour job is to respond to incoming customer emails clearly, professionally, accurately, and helpfully.\n\nYou have access to a Pinecone Vector Store containing the company's knowledge base. The Pinecone Vector Store is your primary source of truth for company-related information.\n\n# Knowledge Base / Pinecone Instructions\n\n- Use the Pinecone Vector Store whenever the customer asks about KamranAIInsights Solutions or anything related to the company's services.\n- Before answering a business-related question, retrieve relevant information from the Pinecone Vector Store.\n- Use the customer's email content and their specific question as the search/query context for retrieval.\n- Retrieve information relevant to the customer's actual intent, not just matching individual keywords.\n- If the customer asks multiple questions, retrieve information relevant to each question before writing the response.\n- Pay close attention to retrieved information about:\n  - AI Agents\n  - AI Automation\n  - Services\n  - Features\n  - Pricing\n  - Packages\n  - Quotes\n  - Orders\n  - Purchase information\n  - Process\n  - Company policies\n  - Frequently asked questions\n- Use the retrieved documents to understand the correct answer and respond naturally.\n- Do not copy irrelevant information from the retrieved documents.\n- Prefer the most relevant and specific retrieved information.\n- If multiple retrieved documents contain relevant information, combine them carefully into one accurate answer.\n- Never invent, guess, assume, or create information that is not supported by the retrieved knowledge.\n- Never make up prices, packages, features, delivery times, guarantees, policies, or services.\n- If the Pinecone Vector Store does not contain enough information to answer the customer's question, do not guess. Politely explain that the team needs to confirm the information and will follow up.\n- Treat the Pinecone knowledge base as the source of truth for company information.\n\n# Customer Intent\n\nUnderstand what the customer is actually asking before retrieving information.\n\nFor example:\n\n- If the customer asks \"What AI agents do you provide?\", retrieve information about AI Agent services.\n- If the customer asks \"How much does an AI agent cost?\", retrieve pricing information.\n- If the customer asks \"What services do you offer?\", retrieve the services information.\n- If the customer asks \"I want to order an AI automation\", retrieve relevant service and order/process information.\n- If the customer asks about an existing order, retrieve relevant order information.\n- If the customer asks about features, retrieve the relevant feature information.\n- If the customer asks about multiple topics, retrieve information for all relevant topics.\n\n# Accuracy Rules\n\n- Only provide information supported by the Pinecone Vector Store.\n- Do not use your general knowledge to invent company-specific information.\n- If information is missing or unclear, say that the team will need to confirm it.\n- Never present an assumption as a fact.\n- Never give an unverified price.\n- Never promise something that is not confirmed in the knowledge base.\n\n# Response Behavior\n\n- Answer the customer's actual question directly.\n- Keep the response concise and easy to understand.\n- Be friendly and professional.\n- Write naturally, like a real customer support representative.\n- Use the customer's context when appropriate.\n- Do not mention Pinecone, vector database, retrieval, knowledge base, tools, workflows, prompts, or internal systems.\n- Do not mention internal classifications.\n- Do not say that you are an AI unless the customer specifically asks.\n- Do not expose internal reasoning or retrieval results.\n\n# Email Style\n\n- Write a natural email response.\n- Address the customer's question first.\n- Keep paragraphs short.\n- Use emojis only when appropriate and sparingly.\n- Do not over-explain.\n- Do not include a subject line.\n- End every response with:\n\nBest regards,\nKamranAIInsights Solutions\n\n# Output\n\nOnly output the email body.\n\nDo not output:\n- Subject lines\n- Internal notes\n- Classification labels\n- Reasoning\n- Tool information\n- Knowledge base information as a separate section\n\nOnly provide the final customer-facing email response."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        336,
+        -80
+      ],
+      "id": "c31d886d-341c-47dd-a043-b2469c03cb61",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        336,
+        176
+      ],
+      "id": "27a371ac-9153-46b2-8fe9-63a40e002ba2",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "7XVSwWXj8yFj3G0n",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Retrieve relevant information from the KamranAIInsights Solutions knowledge base to answer customer emails. Search for information about AI agents, AI automation, services, pricing, packages, quotes, orders, and company policies. Use the customer's email/question to find the most relevant documents. Only use information returned from the knowledge base and never invent or assume business information.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "gmail1212",
+          "mode": "list",
+          "cachedResultName": "gmail1212"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        544,
+        160
+      ],
+      "id": "4d379ffb-cd7c-4573-92f3-c2c16841cbc9",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "InmmNrRQOH54fl7V",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        560,
+        352
+      ],
+      "id": "c33006a6-591f-4e86-bc6d-6366f9196b60",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "RybZtEUIKCAHDfJc",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        832,
+        -80
+      ],
+      "id": "b3c3e8e0-05be-45dc-acad-e6974458b2a5",
+      "name": "Send a message",
+      "webhookId": "d67db59d-b2cd-484a-b318-bd07664cc984",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "b4PZMDyinIf3fCSn",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Gmail Trigger": [
+      {
+        "json": {
+          "id": "19feaf5fd7df38f6",
+          "threadId": "19feaf5fd7df38f6",
+          "labelIds": [
+            "CATEGORY_PERSONAL",
+            "INBOX"
+          ],
+          "sizeEstimate": 7472,
+          "headers": {
+            "delivered-to": "Delivered-To: mr.haji3360@gmail.com",
+            "received": "Received: from mail-sor-f41.google.com (mail-sor-f41.google.com. [209.85.220.41])\r\n        by mx.google.com with SMTPS id 46e09a7af769-7f35b81af73sor2717117a34.13.2026.08.10.02.16.57\r\n        for <mr.haji3360@gmail.com>\r\n        (Google Transport Security);\r\n        Mon, 10 Aug 2026 02:16:57 -0700 (PDT)",
+            "x-received": "X-Received: by 2002:a05:6820:188d:b0:6ac:a0db:1a78 with SMTP id\r\n 006d021491bc7-6b041ee5ad3mr9806466eaf.5.1786353417078; Mon, 10 Aug 2026\r\n 02:16:57 -0700 (PDT)",
+            "arc-seal": "ARC-Seal: i=1; a=rsa-sha256; t=1786353417; cv=none;\r\n        d=google.com; s=arc-20260327;\r\n        b=ACROybrNJSA1lnFvacDT6e9ZvQPs0IBmTGGL9Aau9he2ZQJxf5/z8IuDmrw1u0VLmX\r\n         yssvhJaRvmJnMQgsRBxmNOzUtymSAiE9dTIUoLEpN19oktSQWmYO3s84Ule0iYhaEsvg\r\n         RvwI+YHtkyM+id+9DRTdNsyMu2VJJNEtKyj8uMpJNEUhBMDx1wPL1OMP1kJ5VtTDFLMv\r\n         ycqMgpi/m7Wz2a69CBC0u0Un+ne3GN9wjyZojRugH5ZOzewSnCbzBmxCUHDTY4nae29p\r\n         GwxvWnIZzSjn+K3TOdQU3aBBxJwqRi36n0GIZ+DtNs7DuWPR7wlLa+zRyt+7Bz/ALOo5\r\n         hsgw==",
+            "arc-message-signature": "ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;\r\n        h=to:subject:message-id:date:from:mime-version:dkim-signature;\r\n        bh=Q4AUiEq+VQguq9qap3xlmFRAVasxjy7tEk/nHXkliXw=;\r\n        fh=08G2//HhzhvY5KNSiqabDftQBrcdfztAXENQzP1GfoM=;\r\n        b=Xkb5YCnO2s3/QXaKm3QmELehYgXhn3PztksITQATZm162geAn7yIrsyuEjb295D1m0\r\n         FhYBSnB4JSsCyoZoU8ybwDk6JBfwiI5rm35yLpetKcfOSPBfr/UsgwRAFgRiOIhXDjdh\r\n         YGwda8CaSmwo3EXoCRvz/x6xJYs5FXNpwV4jagoE4V0ZMZ97KxZt1AA12+oF2M+kqD5U\r\n         lCgYeD14Go43RKTNqEc+Ra5QorSVy+L/rLwJNkclK9Hyu0SCSSQREx8YcK0ZFYEgE9sl\r\n         ndyyn0LhZN35tedF//Pbg5lUWIRrNskkA+B3iXAg9GHnWKQUkbhLygXZP7GqF4AVM8kG\r\n         krow==;\r\n        dara=google.com",
+            "arc-authentication-results": "ARC-Authentication-Results: i=1; mx.google.com; arc=none",
+            "return-path": "Return-Path: <talhabaloch3360@gmail.com>",
+            "received-spf": "Received-SPF: pass (google.com: domain of talhabaloch3360@gmail.com designates 209.85.220.41 as permitted sender) client-ip=209.85.220.41;",
+            "authentication-results": "Authentication-Results: mx.google.com;\r\n       dkim=pass header.i=@gmail.com header.s=20251104 header.b=DowKLZy4;\r\n       arc=pass (i=1);\r\n       spf=pass (google.com: domain of talhabaloch3360@gmail.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=talhabaloch3360@gmail.com;\r\n       dmarc=pass (p=NONE sp=QUARANTINE dis=NONE) header.from=gmail.com;\r\n       dara=pass header.i=@gmail.com",
+            "dkim-signature": "DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;\r\n        d=gmail.com; s=20251104; t=1786353417; x=1786958217; dara=google.com;\r\n        h=content-type:to:subject:message-id:date:from:mime-version:from:to\r\n         :cc:subject:date:message-id:reply-to:content-type;\r\n        bh=Q4AUiEq+VQguq9qap3xlmFRAVasxjy7tEk/nHXkliXw=;\r\n        b=DowKLZy4GHDSCOQusOQU9jebE1rCUqrrKp1eXxE6lDKGa0adAJPl3P9WK2DsHt3QZm\r\n         gXLitC75bg8SKQhANf8pk27TcIZ0Y7aJSeom5U+28jTKpkvRVD1oYnanwzRsxdggO/sm\r\n         cybgxRIDoUG5K95iV6wYzoqSProYMoW+939/ag8+V6jknqO1GXYIxIMfaev/SkOXS2gI\r\n         WzBBXnW9Wr0I/dXsOBX1UAENZvXAS5HrxizlsF2gl9zeExxTOu9KKydOqSUJuRmjzh7Y\r\n         e5HYSrGTqvzDgXOazGypYO086vjYrNlUF/GvMHXOWabT1z+shNWeWUPOdfLgbyBF7/gT\r\n         trRw==",
+            "x-google-dkim-signature": "X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;\r\n        d=1e100.net; s=20251104; t=1786353417; x=1786958217;\r\n        h=content-type:to:subject:message-id:date:from:mime-version:x-gm-gg\r\n         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to\r\n         :content-type;\r\n        bh=Q4AUiEq+VQguq9qap3xlmFRAVasxjy7tEk/nHXkliXw=;\r\n        b=mxKywFBou10o0wbk5tEJ1g4ZFyn2rA8WUochsGFknGQvws/OCdSKx90ifl7WtXV2Pz\r\n         7TIlLQZu4yiWCH3Aunpvrodd73daPeeBx6HmmdXQw82+lHXGgkEti9QK2JPvE3MvGMIX\r\n         zm7zDciH5COUaD1ZN4vo5rUGyLo0UwiaCa2TTBtGhH3TbUAmX3e+aV1OGvawGG7laNRB\r\n         3Ii8lbfT6zvctqnOpCt5nqzOKGKCOKM8CiIleuQs9Pd6jhoP9C1yNQD0V62nQ2qq8uyx\r\n         fxVdZSxvSdp7R3jstEiD7JY5TH9pH5/pbdPJCccY5aPPNinF5K7BkGPYGVxxLVRt3zPZ\r\n         NwOA==",
+            "x-gm-message-state": "X-Gm-Message-State: AOJu0YxXex3K95aYF7Ng3uiPCuYrK/0leYVyse6Of6XY4OD2tLg6e2FQ\r\n\tPq19rIsUsECQxhguVtITKnVL3euozIvHIFbK1qPInA1jiZv+PMdHqyPf99i99VVqvMxdkQElRO0\r\n\tQim7NV5zSHvNMsaRs5KT1uEmAXbgUvIc4gX1Uwot2FA==",
+            "x-gm-gg": "X-Gm-Gg: AR+sD13b5BFKahtMfgcSysxQR+Nne5ysaYQ/I4am91OqFUHI0u7jLeWSCzG9wH8/yfc\r\n\t6y6yUZDvxdZWqICI85AibeIulaIDVBUVKTgOOld6MqNNt03XkURClZCDcYJqwWKBm0ygdqoMbGa\r\n\tDNGVuaMrGE216VsURDMjTThvM6LNyAbdG7ut4Edkr4l6e4TWjznyogrFG8mhCxMeCx2qQxEslHx\r\n\tz5ZDp+pxXQHys+AZc968HHHpgrbk8zVxyDSCtm3pvUA9EgN1lzguTBBYeTxr0KgFqw8lVvZ/JUw\r\n\tFygnHSaFLNPi3GoW/KoRJOSxYd90QDDV+Sr2u16TknHtfB0HtzD5NSDyDftfB8CNS850yzSWYh8\r\n\tEa5o=",
+            "mime-version": "MIME-Version: 1.0",
+            "from": "From: Muhammad Talha Ramzan <talhabaloch3360@gmail.com>",
+            "date": "Date: Mon, 10 Aug 2026 02:16:14 -0700",
+            "x-gm-features": "X-Gm-Features: AUfX_mycVaXhJS-9LNOfzI0dO2BqYtXg-MdWZWckNFvQC_cwht3t8gxvzEGnhxs",
+            "message-id": "Message-ID: <CALB7MiYmD_6f16=WrqO4pgttdhvWLfL7DhOKS_P15G5WN4qmQA@mail.gmail.com>",
+            "subject": "Subject: working information",
+            "to": "To: mr.haji3360@gmail.com",
+            "content-type": "Content-Type: multipart/alternative; boundary=\"000000000000de4d080658add0ff\""
+          },
+          "html": "<div dir=\"ltr\">  hey i am interested in automations that your company KamranAIInsights provides. Can you please tell what services and automations your agency provide so that i can make my mind?  </div>\n",
+          "text": "  hey i am interested in automations that your company KamranAIInsights\nprovides. Can you please tell what services and automations your agency\nprovide so that i can make my mind?\n",
+          "textAsHtml": "<p>hey i am interested in automations that your company KamranAIInsights<br/>provides. Can you please tell what services and automations your agency<br/>provide so that i can make my mind?</p>",
+          "subject": "working information",
+          "date": "2026-08-10T09:16:14.000Z",
+          "to": {
+            "value": [
+              {
+                "address": "mr.haji3360@gmail.com",
+                "name": ""
+              }
+            ],
+            "html": "<span class=\"mp_address_group\"><a href=\"mailto:mr.haji3360@gmail.com\" class=\"mp_address_email\">mr.haji3360@gmail.com</a></span>",
+            "text": "mr.haji3360@gmail.com"
+          },
+          "from": {
+            "value": [
+              {
+                "address": "talhabaloch3360@gmail.com",
+                "name": "Muhammad Talha Ramzan"
+              }
+            ],
+            "html": "<span class=\"mp_address_group\"><span class=\"mp_address_name\">Muhammad Talha Ramzan</span> &lt;<a href=\"mailto:talhabaloch3360@gmail.com\" class=\"mp_address_email\">talhabaloch3360@gmail.com</a>&gt;</span>",
+            "text": "\"Muhammad Talha Ramzan\" <talhabaloch3360@gmail.com>"
+          },
+          "messageId": "<CALB7MiYmD_6f16=WrqO4pgttdhvWLfL7DhOKS_P15G5WN4qmQA@mail.gmail.com>"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ab9b5ccc-0cdd-41e5-bed1-d0bcfbfa167d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9cd66cab4dfb834e4c23a49f7a9d51c4804b7df388290cf278a53f37c167ee3e"
+  },
+  "nodeGroups": [],
+  "id": "LzrNM5bl4A00bDSJ",
+  "tags": []
+}
