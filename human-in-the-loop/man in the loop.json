@@ -1,0 +1,441 @@
+{
+  "name": "man in the loop",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Social media post agent",
+        "formDescription": "automate post system ",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "what topic ",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -496,
+        -464
+      ],
+      "id": "10a0c663-61de-4f9c-a902-e8dac537a246",
+      "name": "On form submission",
+      "webhookId": "4956d741-7ba6-4c1d-94bf-28708a7109fc"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "886f85b3-c1dd-4818-a43a-345083cba41c",
+              "name": "what topic ",
+              "value": "={{ $json['what topic '] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -240,
+        -464
+      ],
+      "id": "bb2d7c6a-5d04-4268-a254-02eb3dd413e0",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json['what topic '] }}",
+        "options": {
+          "systemMessage": "# Overview\nYou are an AI agent responsible for creating Twitter (X) posts based on user requests. Posts should always be less than 200 characters.\n\n## Instructions\n1. Always use the Tavily Search tool to find accurate, current information about the topic.\n2. Write an informative, engaging tweet (up to 180 characters).\n3. Include a brief reference to the source (e.g., \"via TechCrunch\", \"according to The Verge\") directly in the tweet.\n4. Do not output anything except the final tweet.\n\n## Tool\n- Tavily Search: Use this for real-time web search. Must be used every time before creating the post. Current data and time : {{ $now }}\n\n## Example\n1) Input: \"Create a tweet about NASA's latest discovery.\"\n2) Action: Search the web using Tavily Search.\n3) Output: \"NASA just found signs of ancient riverbeds on Mars-suggesting the Red Planet may have once been home to life. Huge leap in space exploration 💧 (via NASA) #Mars #SpaceNews\"\n\n## Final Notes\n- Avoid clickbait or speculation—stick to factual and sourced content.\n- AIways Use hashtags\n- Use emojis only to enhance visibility.\n- Keep language friendly, concise, and informative.\n- Never use an \"@\" symbol when referencing the source."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -32,
+        -464
+      ],
+      "id": "bedde8aa-4543-4441-b24f-71882ff3d4d8",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        96,
+        -176
+      ],
+      "id": "923874f2-ebfe-4871-bdc6-6047272210cd",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "XhpmtoQzxk6OGXkW",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e4b65250-0f40-4b5e-8a8e-c2294ccbdcf9",
+              "name": "post",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        368,
+        -464
+      ],
+      "id": "2b812d6b-b998-4fae-b6a9-8f42fd8e3f51",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Search in Tavily",
+        "query": "={{ $json['what topic '] }}",
+        "options": {}
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        -192
+      ],
+      "id": "b77f7861-c5be-4be7-8d0a-39e7b516d1ca",
+      "name": "Search in Tavily",
+      "credentials": {
+        "tavilyApi": {
+          "id": "zYwIS2kK8t9UUmdA",
+          "name": "Tavily account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "mr.haji3360@gmail.com",
+        "subject": "approved or reject",
+        "message": "=goog to go :\n\n {{ $json.post }}",
+        "responseType": "freeText",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        608,
+        -464
+      ],
+      "id": "b419a126-cff7-44b7-ba3d-758e49ff288f",
+      "name": "Send message and wait for response",
+      "webhookId": "3ffff8a2-7036-4cda-82b2-40a33ce4bcb9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "5qzasKqrE9a5lFWa",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.data.text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "approved",
+              "description": "The user has approved the post or indicated it is good."
+            },
+            {
+              "category": "rejected",
+              "description": "The user has rejected the post or requested changes."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        512,
+        -192
+      ],
+      "id": "4e80a2f2-3a15-4beb-862f-7a0e67070c54",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        16
+      ],
+      "id": "91d2abaf-923e-4d4f-a583-0bc040b3da80",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "XhpmtoQzxk6OGXkW",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "mr.haji3360@gmail.com",
+        "subject": "final post ",
+        "emailType": "text",
+        "message": "={{ $('Edit Fields1').item.json.post }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        976,
+        -448
+      ],
+      "id": "9c4cb532-a597-4247-81c3-f7b6b634bb3b",
+      "name": "Send a message",
+      "webhookId": "91fd90d4-e367-42fc-95b6-d54512b73c20",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "5qzasKqrE9a5lFWa",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Original Post:\n{{ $('Edit Fields1').item.json.post }}\n\nUser Feedback / Rejection Reason:\n{{ $json.data.text }}",
+        "options": {
+          "systemMessage": "# Overview\nYou are an AI revision agent responsible for updating and improving a previously generated post based on user feedback or rejection reasons.\n\n## Instructions\n1. Analyze the original post and the user's feedback or rejection reason.\n2. Use the Tavily Search tool if new or updated information is needed based on the feedback.\n3. Rewrite the post to address the user's concerns while keeping it concise, engaging, and under 200 characters.\n4. Do not output anything except the final revised post.\n\n## Tool\n- Tavily Search1: Use this for real-time web search when revisions require updated facts. Current date and time: {{ $now }}\n\n## Final Notes\n- Keep the language friendly, concise, and informative.\n- Ensure all user-requested changes are accurately reflected in the new output.\n- Never use an \"@\" symbol when referencing sources."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        976,
+        -176
+      ],
+      "id": "a843c11a-9352-476e-b63d-c46446e11582",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1184,
+        96
+      ],
+      "id": "15a901d3-0830-463c-8741-bd326aec41ce",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "XhpmtoQzxk6OGXkW",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Search in Tavily",
+        "query": "={{ $json['what topic '] }}",
+        "options": {}
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 1,
+      "position": [
+        944,
+        96
+      ],
+      "id": "7dbbef1c-3b3a-483c-a8e3-416f16cb10a7",
+      "name": "Search in Tavily1",
+      "credentials": {
+        "tavilyApi": {
+          "id": "zYwIS2kK8t9UUmdA",
+          "name": "Tavily account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search in Tavily": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search in Tavily1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "7cd78e6a-d976-4c02-ae30-c2dc089b59b5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "34e66adddf5125dcae947e60aeac9c8d31c8a45e2a035519d45941f832dbffd0"
+  },
+  "nodeGroups": [],
+  "id": "7rQk9qOJANQiuEN2",
+  "tags": []
+}
